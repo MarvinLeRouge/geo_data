@@ -66,6 +66,8 @@ def match_name(source_name: str, candidates: dict[str, str]) -> tuple[str, str]:
         ),
         key=lambda item: item[0],
     )
+    if not scored:
+        raise NameMatchError(f"No candidates to match {source_name!r} against.")
     best_distance, best_key, best_name = scored[0]
     if best_distance > MAX_DISTANCE:
         raise NameMatchError(

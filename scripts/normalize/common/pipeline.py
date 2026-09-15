@@ -67,4 +67,8 @@ def _load_country_config(country_code: str) -> CountryConfig:
 if __name__ == "__main__":
     import sys
 
+    if len(sys.argv) != 2:
+        print("Usage: python -m normalize.common.pipeline <COUNTRY_CODE>")
+        sys.exit(1)
+
     run_pipeline(_load_country_config(sys.argv[1]), Path("data/normalized"))

@@ -33,3 +33,8 @@ def test_raises_when_two_candidates_are_ambiguously_close():
     candidates = {"shape-1": "Aube", "shape-2": "Aule"}
     with pytest.raises(NameMatchAmbiguousError):
         match_name("Aude", candidates)
+
+
+def test_match_name_raises_on_empty_candidates():
+    with pytest.raises(NameMatchError):
+        match_name("Ain", {})

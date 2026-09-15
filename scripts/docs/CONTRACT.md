@@ -1,4 +1,4 @@
-# Normalized data contract (geo_json -> GeoChallenge-Tracker)
+# Normalized data contract (geo_data -> GeoChallenge-Tracker)
 
 This document defines the exact output format this project must produce so
 that GeoChallenge-Tracker's admin upload endpoint can consume it. Any change
@@ -7,14 +7,14 @@ GeoChallenge-Tracker) before implementation.
 
 ## Storage layout
 
-- `raw/{country_code}/...` — untouched data as downloaded from geoBoundaries,
+- `raw/{country_code}/...`: untouched data as downloaded from geoBoundaries,
   kept for traceability and reprocessing. Internal structure is free (whatever
   geoBoundaries' API/download returns).
-- `normalized/{country_code}/adm{level}.geojson` — normalized output, one file
+- `normalized/{country_code}/adm{level}.geojson`: normalized output, one file
   per administrative level, where `{level}` is `0`, `1`, or `2`:
-  - `adm0.geojson` — country boundary
-  - `adm1.geojson` — region-equivalent subdivisions
-  - `adm2.geojson` — department-equivalent subdivisions
+  - `adm0.geojson`: country boundary
+  - `adm1.geojson`: region-equivalent subdivisions
+  - `adm2.geojson`: department-equivalent subdivisions
 - `{country_code}` is the ISO 3166-1 alpha-2 code, uppercase (e.g. `FR`).
 
 ## Normalized GeoJSON feature schema
@@ -39,7 +39,7 @@ populate from these files.
 
 ## Attribution
 
-geoBoundaries data is CC-BY 4.0. A `SOURCES.md` at the project root must
+geoBoundaries data is CC-BY 4.0. A `SOURCES.md` (`scripts/docs/SOURCES.md`) must
 track, per country and per level: source name, license, source URL, and the
 date the data was fetched.
 
