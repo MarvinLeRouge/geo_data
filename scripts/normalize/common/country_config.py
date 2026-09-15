@@ -22,3 +22,4 @@ class CountryConfig:
 
 
 from normalize.common.countries.fr import FR_CONFIG  # noqa: E402,F401
+from normalize.common.countries.it import IT_CONFIG  # noqa: E402,F401
