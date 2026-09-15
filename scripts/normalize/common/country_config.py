@@ -19,3 +19,6 @@ class CountryConfig:
     iso2: str
     iso3: str
     levels: dict[int, LevelConfig]
+
+
+from normalize.common.countries.fr import FR_CONFIG  # noqa: E402,F401
