@@ -29,8 +29,9 @@ def test_fr_pipeline_writes_name_variants_file(tmp_path: Path):
     run_pipeline(FR_CONFIG, tmp_path)
 
     variants = json.loads((tmp_path / "FR" / "name_variants.json").read_text())
-    # Real, known variants for the current data snapshot.
-    assert variants["22"] == "Côtes d'Armor"
+    # Real, known variant for the current data snapshot - keyed by level since
+    # FR's level-1 and level-2 feature_code namespaces fully overlap.
+    assert variants["2"]["22"] == "Côtes d'Armor"
 
 
 def test_it_pipeline_produces_the_20_regions_and_107_provinces(tmp_path: Path):

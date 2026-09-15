@@ -28,11 +28,12 @@ def run_pipeline(country_config: CountryConfig, output_dir: Path) -> None:
     country_dir = output_dir / country_config.iso2
     country_dir.mkdir(parents=True, exist_ok=True)
 
-    all_variants: dict[str, str] = {}
+    all_variants: dict[str, dict[str, str]] = {}
     for level in sorted(country_config.levels):
         handler = HANDLERS[country_config.levels[level].handler]
         result = handler.resolve(level, country_config)
-        all_variants.update(result.name_variants)
+        if result.name_variants:
+            all_variants[str(level)] = result.name_variants
 
         feature_collection = {
             "type": "FeatureCollection",
