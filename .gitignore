@@ -1,1 +1,14 @@
 .worktrees/
+
+# geo_data normalization tooling (this project's own additions)
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+uv.lock
+
+data/insee/
+data/geonames/
+data/geoboundaries/
+data/normalized/*
+!data/normalized/.gitkeep
