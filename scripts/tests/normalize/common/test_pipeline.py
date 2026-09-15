@@ -31,3 +31,19 @@ def test_fr_pipeline_writes_name_variants_file(tmp_path: Path):
     variants = json.loads((tmp_path / "FR" / "name_variants.json").read_text())
     # Real, known variants for the current data snapshot.
     assert variants["22"] == "Côtes d'Armor"
+
+
+def test_it_pipeline_produces_the_20_regions_and_107_provinces(tmp_path: Path):
+    from normalize.common.country_config import IT_CONFIG
+
+    run_pipeline(IT_CONFIG, tmp_path)
+
+    adm1 = json.loads((tmp_path / "IT" / "adm1.geojson").read_text())
+    adm2 = json.loads((tmp_path / "IT" / "adm2.geojson").read_text())
+
+    assert len(adm1["features"]) == 20
+    assert len(adm2["features"]) == 107
+    piemonte = next(f for f in adm1["features"] if f["properties"]["feature_code"] == "piemonte")
+    assert piemonte["properties"]["name"] == "Piemonte"
+    torino = next(f for f in adm2["features"] if f["properties"]["feature_code"] == "torino")
+    assert torino["properties"]["parent_feature_code"] == "piemonte"

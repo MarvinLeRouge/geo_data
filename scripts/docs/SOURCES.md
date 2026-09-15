@@ -17,4 +17,7 @@ originally cloned from (no code or data from it is used by this pipeline).
 
 | Country code | Level | Source | License | Source URL | Fetched on |
 |---|---|---|---|---|---|
-<!-- | FR | 1 | geoBoundaries + INSEE | CC-BY 4.0 / Licence Ouverte | https://www.geoboundaries.org/... | 2026-09-14 | -->
+| FR | 1 | geoBoundaries + INSEE | CC-BY 4.0 / Licence Ouverte | https://www.geoboundaries.org/ | 2026-09-15 |
+| FR | 2 | geoBoundaries + INSEE | CC-BY 4.0 / Licence Ouverte | https://www.geoboundaries.org/ | 2026-09-15 |
+| IT | 1 | geoBoundaries | CC-BY 4.0 | https://www.geoboundaries.org/ | 2026-09-15 |
+| IT | 2 | geoBoundaries | CC-BY 4.0 | https://www.geoboundaries.org/ | 2026-09-15 |
