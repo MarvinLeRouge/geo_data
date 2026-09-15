@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from normalize.common.country_config import CountryConfig, LevelConfig
+from normalize.common.config_types import CountryConfig, LevelConfig
 
 IT_CONFIG = CountryConfig(
     iso2="IT",
