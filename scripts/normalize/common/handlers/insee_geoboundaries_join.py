@@ -30,8 +30,7 @@ class InseeGeoboundariesJoinHandler:
 
         if level == 1:
             return self._resolve_regions(candidates, shapes)
-        if level == 2:
-            return self._resolve_departements(candidates, shapes)
+        return self._resolve_departements(candidates, shapes)
 
     def _resolve_regions(self, candidates: dict[str, str], shapes: dict) -> ResolutionResult:
         records = []

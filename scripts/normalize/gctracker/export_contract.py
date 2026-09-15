@@ -36,7 +36,7 @@ def export_country(country_code: str, normalized_dir: Path, output_dir: Path) ->
     dest_dir = output_dir / country_code
     dest_dir.mkdir(parents=True, exist_ok=True)
 
-    for source_path in sorted(source_dir.glob("adm*.geojson")):
+    for source_path in sorted(source_dir.glob("adm[12].geojson")):
         payload = json.loads(source_path.read_text())
         exported = {
             "type": "FeatureCollection",
@@ -47,5 +47,9 @@ def export_country(country_code: str, normalized_dir: Path, output_dir: Path) ->
 
 if __name__ == "__main__":
     import sys
+
+    if len(sys.argv) != 2:
+        print("Usage: python -m normalize.gctracker.export_contract <COUNTRY_CODE>")
+        sys.exit(1)
 
     export_country(sys.argv[1], Path("data/normalized"), Path("data/gctracker_export"))
