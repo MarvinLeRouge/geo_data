@@ -2,8 +2,14 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
+import pytest
+
 from normalize.common.country_config import CountryConfig, LevelConfig
-from normalize.common.handlers.admin2_as_region import Admin2AsRegionHandler
+from normalize.common.handlers.admin2_as_region import (
+    Admin2AsRegionHandler,
+    UnresolvedParentError,
+    _slugify,
+)
 
 HANDLER_MODULE = "normalize.common.handlers.admin2_as_region"
 
@@ -88,3 +94,42 @@ class TestResolveLevel2:
             result = Admin2AsRegionHandler().resolve(2, IT_CONFIG)
 
         assert result.records[0].parent_feature_code == "toscana"
+
+
+class TestSlugify:
+    def test_handles_non_french_italian_accented_letters_via_nfkd(self):
+        assert _slugify("Südtirol") == "sudtirol"
+        assert _slugify("Ürgüp") == "urgup"
+        assert _slugify("Ñuble") == "nuble"
+        assert _slugify("Åland") == "aland"
+        assert _slugify("Córdoba") == "cordoba"
+
+    def test_raises_on_empty_slug(self):
+        with pytest.raises(ValueError):
+            _slugify("---")
+
+
+class TestSlugCollision:
+    def test_two_level1_shapes_colliding_on_slug_raise(self):
+        shapes = {
+            "shape-1": _shape("Forli'-Cesena", REGION_SQUARE),
+            "shape-2": _shape("Forlì-Cesena", REGION_SQUARE),
+        }
+        with patch(f"{HANDLER_MODULE}.load_geoboundaries_level", return_value=shapes):
+            with pytest.raises(ValueError, match="Forli'-Cesena.*Forlì-Cesena|Forlì-Cesena.*Forli'-Cesena"):
+                Admin2AsRegionHandler().resolve(1, IT_CONFIG)
+
+
+class TestUnresolvedParent:
+    def test_shape_outside_every_parent_polygon_raises(self):
+        region_square = [[0.0, 0.0], [2.0, 0.0], [2.0, 2.0], [0.0, 2.0], [0.0, 0.0]]
+        outside_square = [[10.0, 10.0], [10.5, 10.0], [10.5, 10.5], [10.0, 10.5], [10.0, 10.0]]
+
+        def _load(iso3: str, adm_level: int):
+            if adm_level == 2:
+                return {"region-1": _shape("Piemonte", region_square)}
+            return {"province-1": _shape("Torino", outside_square)}
+
+        with patch(f"{HANDLER_MODULE}.load_geoboundaries_level", side_effect=_load):
+            with pytest.raises(UnresolvedParentError):
+                Admin2AsRegionHandler().resolve(2, IT_CONFIG)

@@ -47,3 +47,4 @@ def test_it_pipeline_produces_the_20_regions_and_107_provinces(tmp_path: Path):
     assert piemonte["properties"]["name"] == "Piemonte"
     torino = next(f for f in adm2["features"] if f["properties"]["feature_code"] == "torino")
     assert torino["properties"]["parent_feature_code"] == "piemonte"
+    assert all(f["properties"].get("parent_feature_code") for f in adm2["features"])
