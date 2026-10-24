@@ -13,3 +13,6 @@ data/normalized/*
 !data/normalized/.gitkeep
 data/gctracker_export/*
 !data/gctracker_export/.gitkeep
+
+# Tooling
+.codegraph
