@@ -2,7 +2,7 @@
 name = "geo-data-normalize"
 version = "0.1.0"
 description = "Downloads and normalizes administrative boundary data (INSEE, geoBoundaries, geonames)."
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
     "httpx>=0.28",
     "shapely>=2.1",
