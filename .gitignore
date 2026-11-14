@@ -18,3 +18,4 @@ data/gctracker_export/*
 .codegraph
 # Local working docs (prompts, reports)
 docs/work-in-progress/
+.serena/
