@@ -3,8 +3,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from normalize.common.country_config import FR_CONFIG
-from normalize.common.pipeline import run_pipeline
+import pytest
+
+from normalize.common.country_config import FR_CONFIG, IT_CONFIG
+from normalize.common.pipeline import _load_country_config, run_pipeline
 
 
 def test_fr_pipeline_produces_109_metropolitan_zones(tmp_path: Path):
@@ -49,3 +51,13 @@ def test_it_pipeline_produces_the_20_regions_and_107_provinces(tmp_path: Path):
     torino = next(f for f in adm2["features"] if f["properties"]["feature_code"] == "torino")
     assert torino["properties"]["parent_feature_code"] == "piemonte"
     assert all(f["properties"].get("parent_feature_code") for f in adm2["features"])
+
+
+def test_load_country_config_resolves_registered_codes():
+    assert _load_country_config("FR") is FR_CONFIG
+    assert _load_country_config("IT") is IT_CONFIG
+
+
+def test_load_country_config_rejects_unknown_code():
+    with pytest.raises(ValueError, match="'XX'"):
+        _load_country_config("XX")
