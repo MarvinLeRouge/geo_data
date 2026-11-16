@@ -178,3 +178,45 @@ def test_verify_entry_reports_head_failure_and_bad_zip(tmp_path: Path):
     assert len(errors) == 2
     assert errors[0].startswith("Impossible d'obtenir Content-Length via HEAD")
     assert "archive ZIP valide" in errors[1]
+
+
+def test_download_file_writes_target_and_updates_cache(tmp_path: Path):
+    path = tmp_path / "FRA" / "a.zip"
+    entry = make_entry(path)
+    cache: dict[str, dict] = {}
+    client = make_client(lambda request: httpx.Response(200, content=b"payload"))
+
+    assert dgb.download_file(client, entry, cache) == 7
+
+    assert path.read_bytes() == b"payload"
+    assert not path.with_name("a.zip.part").exists()
+    assert cache["FRA/a.zip"]["content_length"] == 7
+    assert cache["FRA/a.zip"]["downloaded_bytes"] == 7
+    assert cache["FRA/a.zip"]["url"] == entry.url
+    assert dgb.load_metadata_cache() == cache
+
+
+def test_download_file_without_content_length(tmp_path: Path):
+    path = tmp_path / "a.zip"
+    client = make_client(lambda request: httpx.Response(200, content=iter([b"ab", b"cd"])))
+    cache: dict[str, dict] = {}
+
+    assert dgb.download_file(client, make_entry(path), cache) is None
+
+    assert path.read_bytes() == b"abcd"
+    assert cache["FRA/a.zip"]["content_length"] is None
+    assert cache["FRA/a.zip"]["downloaded_bytes"] == 4
+
+
+def test_download_file_http_error_leaves_no_file_and_no_cache(tmp_path: Path, isolated_paths: Path):
+    path = tmp_path / "a.zip"
+    cache: dict[str, dict] = {}
+    client = make_client(lambda request: httpx.Response(404))
+
+    with pytest.raises(httpx.HTTPStatusError):
+        dgb.download_file(client, make_entry(path), cache)
+
+    assert not path.exists()
+    assert not path.with_name("a.zip.part").exists()
+    assert cache == {}
+    assert not isolated_paths.exists()

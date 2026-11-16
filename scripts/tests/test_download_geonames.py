@@ -191,3 +191,45 @@ def test_verify_entry_skips_zip_check_for_non_zip(tmp_path: Path):
         True,
         [],
     )
+
+
+def test_download_file_writes_target_and_updates_cache(tmp_path: Path):
+    path = tmp_path / "sub" / "AD.zip"
+    entry = make_entry(path, "1K")
+    cache: dict[str, dict] = {}
+    client = make_client(lambda request: httpx.Response(200, content=b"payload"))
+
+    assert dg.download_file(client, entry, cache) == 7
+
+    assert path.read_bytes() == b"payload"
+    assert not path.with_name("AD.zip.part").exists()
+    assert cache["AD.zip"]["content_length"] == 7
+    assert cache["AD.zip"]["downloaded_bytes"] == 7
+    assert cache["AD.zip"]["listing_size_str"] == "1K"
+    assert dg.load_metadata_cache() == cache
+
+
+def test_download_file_without_content_length(tmp_path: Path):
+    path = tmp_path / "AD.zip"
+    client = make_client(lambda request: httpx.Response(200, content=iter([b"ab", b"cd"])))
+    cache: dict[str, dict] = {}
+
+    assert dg.download_file(client, make_entry(path, "1K"), cache) is None
+
+    assert path.read_bytes() == b"abcd"
+    assert cache["AD.zip"]["content_length"] is None
+    assert cache["AD.zip"]["downloaded_bytes"] == 4
+
+
+def test_download_file_http_error_leaves_no_file_and_no_cache(tmp_path: Path, isolated_cache: Path):
+    path = tmp_path / "AD.zip"
+    cache: dict[str, dict] = {}
+    client = make_client(lambda request: httpx.Response(404))
+
+    with pytest.raises(httpx.HTTPStatusError):
+        dg.download_file(client, make_entry(path, "1K"), cache)
+
+    assert not path.exists()
+    assert not path.with_name("AD.zip.part").exists()
+    assert cache == {}
+    assert not isolated_cache.exists()
