@@ -23,3 +23,7 @@ dev = [
 [tool.pytest.ini_options]
 pythonpath = ["scripts"]
 testpaths = ["scripts/tests"]
+
+[tool.coverage.report]
+# CLI entry points are thin argv wrappers, exercised by hand rather than by tests.
+exclude_also = ['if __name__ == "__main__":']
