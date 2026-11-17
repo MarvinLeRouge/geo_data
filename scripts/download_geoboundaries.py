@@ -250,7 +250,7 @@ def verify_entry(
     return len(errors) == 0, errors
 
 
-def main() -> None:
+def main() -> None:  # pragma: no cover - interactive CLI orchestration of the tested helpers
     """Point d'entrée principal du script."""
     parser = argparse.ArgumentParser(
         description="Téléchargement et vérification des archives geoBoundaries."

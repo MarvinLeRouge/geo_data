@@ -133,3 +133,8 @@ class TestUnresolvedParent:
         with patch(f"{HANDLER_MODULE}.load_geoboundaries_level", side_effect=_load):
             with pytest.raises(UnresolvedParentError):
                 Admin2AsRegionHandler().resolve(2, IT_CONFIG)
+
+
+def test_resolve_rejects_unsupported_level():
+    with pytest.raises(ValueError, match="does not support level 3"):
+        Admin2AsRegionHandler().resolve(3, IT_CONFIG)

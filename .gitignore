@@ -19,3 +19,6 @@ data/gctracker_export/*
 # Local working docs (prompts, reports)
 docs/work-in-progress/
 .serena/
+
+# Coverage data
+.coverage
