@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import zipfile
 from pathlib import Path
+from types import SimpleNamespace
 
 import httpx
 import pytest
@@ -45,6 +46,14 @@ def make_entry(path: Path, listing_size_str: str) -> dg.FileEntry:
 def write_zip(path: Path) -> int:
     with zipfile.ZipFile(path, "w") as zf:
         zf.writestr("data.txt", "hello")
+    return path.stat().st_size
+
+
+def write_crc_corrupt_zip(path: Path) -> int:
+    """Writes a stored ZIP, then alters its payload so the header stays valid but the CRC fails."""
+    with zipfile.ZipFile(path, "w") as zf:
+        zf.writestr("data.txt", "payload-ok")
+    path.write_bytes(path.read_bytes().replace(b"payload-ok", b"payload-ko"))
     return path.stat().st_size
 
 
@@ -233,3 +242,41 @@ def test_download_file_http_error_leaves_no_file_and_no_cache(tmp_path: Path, is
     assert not path.with_name("AD.zip.part").exists()
     assert cache == {}
     assert not isolated_cache.exists()
+
+
+def test_verify_entry_reports_crc_corrupt_zip_member(tmp_path: Path):
+    path = tmp_path / "AD.zip"
+    size = write_crc_corrupt_zip(path)
+    client = make_client(lambda r: httpx.Response(200))
+    ok, errors = dg.verify_entry(client, make_entry(path, str(size)), {"AD.zip": {"content_length": size}})
+    assert (ok, errors) == (False, ["Archive ZIP corrompue (erreur CRC sur : data.txt)"])
+
+
+def test_verify_entry_reports_unreadable_zip(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    path = tmp_path / "AD.zip"
+    size = write_zip(path)
+
+    def unreadable(*args, **kwargs):
+        raise zipfile.BadZipFile("truncated central directory")
+
+    monkeypatch.setattr(dg.zipfile, "ZipFile", unreadable)
+    client = make_client(lambda r: httpx.Response(200))
+    ok, errors = dg.verify_entry(client, make_entry(path, str(size)), {"AD.zip": {"content_length": size}})
+    assert (ok, errors) == (False, ["Échec de lecture du ZIP : truncated central directory"])
+
+
+def test_download_file_prints_throttled_progress(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+):
+    monkeypatch.setattr(dg, "CHUNK_SIZE", 2)
+    # time.time() calls: start, chunk 1 (+1.0 s, prints), chunk 2 (+0.2 s, throttled), cache timestamp.
+    clock = iter([0.0, 1.0, 1.2, 5.0])
+    monkeypatch.setattr(dg, "time", SimpleNamespace(time=lambda: next(clock)))
+    client = make_client(lambda request: httpx.Response(200, content=b"abcd"))
+
+    assert dg.download_file(client, make_entry(tmp_path / "AD.zip", "1K"), {}) == 4
+
+    out = capsys.readouterr().out
+    assert "\r    Téléchargement : 2 o (50%)..." in out
+    assert "(100%)..." not in out
+    assert out.endswith("\r    Téléchargement : 4 o (100%)       \n")

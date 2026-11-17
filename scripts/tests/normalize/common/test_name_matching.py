@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from normalize.common.name_matching import NameMatchAmbiguousError, NameMatchError, match_name
+from normalize.common.name_matching import (
+    NameMatchAmbiguousError,
+    NameMatchError,
+    levenshtein,
+    match_name,
+)
 
 
 def test_exact_match_returns_directly():
@@ -38,3 +43,12 @@ def test_raises_when_two_candidates_are_ambiguously_close():
 def test_match_name_raises_on_empty_candidates():
     with pytest.raises(NameMatchError):
         match_name("Ain", {})
+
+
+@pytest.mark.parametrize(
+    ("a", "b", "expected"),
+    [("Ain", "Ain", 0), ("", "Ain", 3), ("Aisne", "", 5)],
+    ids=["identical", "empty-source", "empty-target"],
+)
+def test_levenshtein_short_circuits_identical_and_empty_strings(a, b, expected):
+    assert levenshtein(a, b) == expected
