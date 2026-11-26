@@ -10,3 +10,4 @@
 - [x] CHORE-001 - Passer à Python 3.14 et mettre à jour les dépendances verrouillées
 - [x] CHORE-002 - Limiter Dependabot à la mise à jour de uv.lock (stratégie lockfile-only)
 - [x] DOCS-001 - Suivre dans la roadmap les tâches de maintenance déjà mergées
+- [x] DOCS-002 - Rédiger le contexte produit (outil transverse générique de données géo)
